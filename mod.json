@@ -1,0 +1,15 @@
+﻿{
+  "Id": "LaserCutterImprovements",
+  "DisplayName": "Laser Cutter Improvements",
+  "Author": "FalseLight",
+  "Version": "0.0.1",
+  "Enable": true,
+  "AssemblyName": "Laser Cutter Improvements.dll",
+  "VersionDependencies": 
+  
+  {
+    "SMLHelper": "2.11"
+  },
+
+  "Game": "Subnautica"
+}
