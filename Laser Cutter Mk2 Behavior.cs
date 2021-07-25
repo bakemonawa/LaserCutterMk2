@@ -2,15 +2,14 @@
 using HarmonyLib;
 using System.Linq;
 using UWE;
+
 using Logger = QModManager.Utility.Logger;
 
 namespace LaserCutterMk2
 {
-    [HarmonyPatch(typeof(LaserCutter))]
-    
-    [RequireComponent(typeof(EnergyMixin))]
-     
-       
+         [RequireComponent(typeof(EnergyMixin))]
+         
+
     public class LaserCutterMk2 : LaserCutter
     {
            

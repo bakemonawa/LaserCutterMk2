@@ -10,68 +10,144 @@ using SMLHelper.V2.Utility;
 using SMLHelper.V2.Crafting;
 using UWE;
 using System.Collections;
+using SMLHelper.V2.Handlers;
+using HarmonyLib;
 
 namespace LaserCutterMk2
 {
+     
     internal class LaserCutterMk2Prefab : Equipable
     {
-        public LaserCutterMk2Prefab(string classId, string friendlyName, string description) : base("LaserCutterMk2", "Laser Cutter Mk 2", "Removes built-in safety features, allowing the Laser Cutter to be used on organic targets")
-        {
-        }
 
-        public static Atlas.Sprite CustomSprite => SpriteManager.Get(TechType.LaserCutter);
+       public LaserCutterMk2Prefab(string classId, string friendlyName, string description) : base("LaserCutterMk2", "Laser Cutter Mk 2", "Removes built-in safety features, allowing the Laser Cutter to be used on organic targets")
+        
+
+        {
+            CraftTreeHandler.AddTabNode(CraftTree.Type.Workbench, "LaserCutterMods", "Laser Cutter Upgrades", SpriteManager.Get(TechType.LaserCutter));
+        }
 
         public override string AssetsFolder => base.AssetsFolder;
 
         public override string IconFileName => base.IconFileName;
 
+        public override Vector2int SizeInInventory => base.SizeInInventory;
+
+        public override List<SpawnLocation> CoordinatedSpawns => base.CoordinatedSpawns;
+
+        public override List<LootDistributionData.BiomeData> BiomesToSpawnIn => base.BiomesToSpawnIn;
+
         public override WorldEntityInfo EntityInfo => base.EntityInfo;
 
-        public override bool HasSprite => true;
+        public override bool HasSprite => base.HasSprite;
 
         public override TechType RequiredForUnlock => TechType.LaserCutter;
 
-        public override bool AddScannerEntry => false;
+        public override bool AddScannerEntry => base.AddScannerEntry;
+
+        public override int FragmentsToScan => 0;
+
+        public override float TimeToScanFragment => base.TimeToScanFragment;
+
+        public override bool DestroyFragmentOnScan => base.DestroyFragmentOnScan;
 
         public override PDAEncyclopedia.EntryData EncyclopediaEntryData => base.EncyclopediaEntryData;
 
-        public override TechGroup GroupForPDA => TechGroup.Workbench;
+        public override TechGroup GroupForPDA => TechGroup.Personal;
 
-        public override TechCategory CategoryForPDA => TechCategory.Workbench;
+        public override TechCategory CategoryForPDA => TechCategory.Tools;
 
         public override bool UnlockedAtStart => false;
 
+        public override string DiscoverMessage => base.DiscoverMessage;
+
         public override CraftTree.Type FabricatorType => CraftTree.Type.Workbench;
 
-        public override string[] StepsToFabricatorTab => base.StepsToFabricatorTab;
+        public override string[] StepsToFabricatorTab { get; } = new[] { "Laser Cutter Upgrades", "Laser Cutter Mk2" };
+
+        public override float CraftingTime => 5f;
 
         public override EquipmentType EquipmentType => EquipmentType.Hand;
 
+        public override QuickSlotType QuickSlotType => QuickSlotType.Selectable;
+
+       
+
         protected override TechData GetBlueprintRecipe()
-        {
-            return new TechData()
             {
-                craftAmount = 1,
-                Ingredients =
+                return new TechData()
                 {
-                    new Ingredient(TechType.LaserCutter, 1),
-                    new Ingredient(TechType.ComputerChip, 1),
-                    new Ingredient(TechType.Diamond, 1),
-                }
-            };
-        }
+                        craftAmount = 1,
+                        Ingredients =
+                        {
+                        new Ingredient(TechType.LaserCutter, 1),
+                        new Ingredient(TechType.WiringKit, 1),
+                        }
+                };
+            }
+
+       
+
+
 
         public override GameObject GetGameObject()
+                {
+                    GameObject LaserCutterMk2 = CraftData.GetPrefabForTechType(TechType.LaserCutter);
+                    var obj = GameObject.Instantiate(LaserCutterMk2);
+                    GameObject.DestroyImmediate(obj.GetComponent<LaserCutter>());
+                    
+                    obj.AddComponent<LaserCutterMk2>();
+                    obj.EnsureComponent<EnergyMixin>();
+                    
+                    return obj;
+                }
+
+        public override string ToString()
         {
-            GameObject LaserCutterMk2 = CraftData.GetPrefabForTechType(TechType.LaserCutter);
-            var obj = GameObject.Instantiate(LaserCutterMk2);
-            GameObject.DestroyImmediate(obj.GetComponent<LaserCutter>());
-            LaserCutterMk2.AddComponent<EnergyMixin>();
-            
-            return obj;
+            return base.ToString();
         }
-         
+
+        public override bool Equals(object obj)
+        {
+            return base.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        protected override void ProcessPrefab(GameObject go)
+        {
+            base.ProcessPrefab(go);
+        }
+
         
+        protected override Atlas.Sprite GetItemSprite()
+        {
+            return SpriteManager.Get(TechType.LaserCutter);
+        }
+        public static Atlas.Sprite CustomSprite => SpriteManager.Get(TechType.LaserCutter);
+
         
+
+        
+
+            
+            
     }
+
+    
+    
+        
+    
+    
 }
+
+
+
+
+
+
+  
+
+
