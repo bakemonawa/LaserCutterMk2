@@ -12,8 +12,9 @@ namespace LaserCutterMk2
 
     public class LaserCutterMk2 : LaserCutter
     {
-           
-        
+
+        public override string animToolName => TechType.LaserCutter.AsString(true);
+
         public override void OnToolUseAnim(GUIHand hand)
 
         {

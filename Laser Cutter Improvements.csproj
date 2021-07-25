@@ -67,6 +67,10 @@
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>D:\Steam\steamapps\common\Subnautica\Subnautica_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.PhysicsModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\Steam\steamapps\common\Subnautica\Subnautica_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>D:\Steam\steamapps\common\Subnautica\Subnautica_Data\Managed\UnityEngine.UI.dll</HintPath>
     </Reference>
@@ -76,7 +80,6 @@
     <Compile Include="LaserCutterMk2Prefab.cs" />
     <Compile Include="Laser Cutter Mk2 Behavior.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Qmod.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="mod.json" />

@@ -20,10 +20,11 @@ namespace LaserCutterMk2
     {
 
        public LaserCutterMk2Prefab(string classId, string friendlyName, string description) : base("LaserCutterMk2", "Laser Cutter Mk 2", "Removes built-in safety features, allowing the Laser Cutter to be used on organic targets")
-        
 
+
+            
         {
-            CraftTreeHandler.AddTabNode(CraftTree.Type.Workbench, "LaserCutterMods", "Laser Cutter Upgrades", SpriteManager.Get(TechType.LaserCutter));
+            
         }
 
         public override string AssetsFolder => base.AssetsFolder;
@@ -62,13 +63,11 @@ namespace LaserCutterMk2
 
         public override CraftTree.Type FabricatorType => CraftTree.Type.Workbench;
 
-        public override string[] StepsToFabricatorTab { get; } = new[] { "Laser Cutter Upgrades", "Laser Cutter Mk2" };
-
         public override float CraftingTime => 5f;
 
         public override EquipmentType EquipmentType => EquipmentType.Hand;
 
-        public override QuickSlotType QuickSlotType => QuickSlotType.Selectable;
+        
 
        
 
@@ -93,9 +92,12 @@ namespace LaserCutterMk2
                 {
                     GameObject LaserCutterMk2 = CraftData.GetPrefabForTechType(TechType.LaserCutter);
                     var obj = GameObject.Instantiate(LaserCutterMk2);
+                    var lcMk2 = obj.AddComponent<LaserCutterMk2>();
+                    lcMk2.ikAimRightArm = true;
+                    lcMk2.mainCollider = obj.GetComponent<Collider>();
                     GameObject.DestroyImmediate(obj.GetComponent<LaserCutter>());
                     
-                    obj.AddComponent<LaserCutterMk2>();
+                    
                     obj.EnsureComponent<EnergyMixin>();
                     
                     return obj;
