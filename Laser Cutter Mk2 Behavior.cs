@@ -1,13 +1,27 @@
 ﻿using UnityEngine;
-using HarmonyLib;
-using System.Linq;
-using UWE;
+using System;
+using System.IO;
+using System.Reflection;
+using System.Collections.Generic;
 
-using Logger = QModManager.Utility.Logger;
+using System.Text;
+using SMLHelper.V2.Assets;
+using SMLHelper.V2.Utility;
+using SMLHelper.V2.Crafting;
+using UWE;
+using System.Collections;
+using SMLHelper.V2.Handlers;
+using HarmonyLib;
+
 
 namespace LaserCutterMk2
 {
-         [RequireComponent(typeof(EnergyMixin))]
+    using System.Linq;
+    using UWE;
+    using UnityEngine;
+    using Logger = QModManager.Utility.Logger;
+
+    [RequireComponent(typeof(EnergyMixin))]
          
 
     public class LaserCutterMk2 : LaserCutter
@@ -15,29 +29,66 @@ namespace LaserCutterMk2
 
         public override string animToolName => TechType.LaserCutter.AsString(true);
 
+        private LiveMixin activeLiveMixinTarget;
+
+        // raycast to find a live mixin
+        private void UpdateLiveTarget()
+        {
+            activeLiveMixinTarget = null;
+            if (usingPlayer != null)
+            {
+                Vector3 vector = default(Vector3);
+                GameObject gameObject = null;
+
+                UWE.Utils.TraceFPSTargetPosition(Player.main.gameObject, 5f, ref gameObject, ref vector, true);
+                if (gameObject == null)
+                {
+                    InteractionVolumeUser interactionVolume = Player.main.gameObject.GetComponent<InteractionVolumeUser>();
+                    if (interactionVolume != null && interactionVolume.GetMostRecent() != null)
+                    {
+                        gameObject = interactionVolume.GetMostRecent().gameObject;
+                    }
+                }
+                if (gameObject)
+                {
+                    var liveMixin = gameObject.GetComponentInParent<LiveMixin>();
+                    if (liveMixin)
+                    {
+                        activeLiveMixinTarget = liveMixin;
+                    }
+                }
+            }
+        }
+
+        private void Update()
+        {
+            if (!isDrawn)
+                return;
+
+            UpdateLiveTarget();
+            base.Update();
+        }
+
         public override void OnToolUseAnim(GUIHand hand)
 
         {
-            float LaserDamage = 35f * Time.deltaTime;
-
             energyMixin.ConsumeEnergy(1f);
 
-            LiveMixin mixin = GetComponentInChildren<LiveMixin>();
+            float LaserDamage = 35f * Time.deltaTime;
+            
 
-            if (mixin)
 
-
+            if (activeLiveMixinTarget != null)
             {
-                mixin.IsAlive();
-                mixin.TakeDamage(LaserDamage, type: DamageType.Heat);
-                base.StartLaserCuttingFX();
+                activeLiveMixinTarget.TakeDamage(LaserDamage);
+                StartLaserCuttingFX();
             }
-
             else
-
             {
-                base.LaserCut();
+                LaserCut();
             }
+
+
 
 
             Logger.Log(Logger.Level.Debug, $"Knife damage was: null," +

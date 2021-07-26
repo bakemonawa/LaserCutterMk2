@@ -61,8 +61,6 @@ namespace LaserCutterMk2
 
         public override string DiscoverMessage => base.DiscoverMessage;
 
-        public override CraftTree.Type FabricatorType => CraftTree.Type.Workbench;
-
         public override float CraftingTime => 5f;
 
         public override EquipmentType EquipmentType => EquipmentType.Hand;
