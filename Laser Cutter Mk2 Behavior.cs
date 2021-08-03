@@ -22,12 +22,19 @@ namespace LaserCutterMk2
     using Logger = QModManager.Utility.Logger;
 
     [RequireComponent(typeof(EnergyMixin))]
+    
          
 
     public class LaserCutterMk2 : LaserCutter
     {
 
-        public override string animToolName => TechType.LaserCutter.AsString(true);
+        public override string animToolName => TechType.Welder.AsString(true);
+
+        public object AddressablesUtility { get; private set; }
+
+        
+
+      
 
         private LiveMixin activeLiveMixinTarget;
 
@@ -69,20 +76,33 @@ namespace LaserCutterMk2
             base.Update();
         }
 
+          
+        
+        
+        
+             
+
         public override void OnToolUseAnim(GUIHand hand)
 
         {
-            energyMixin.ConsumeEnergy(1f);
 
-            float LaserDamage = 35f * Time.deltaTime;
-            
+            float LaserEnergyCost = 1f * Time.deltaTime*2;
+            float LaserDamage = 45f * Time.deltaTime;
+
+            energyMixin.ConsumeEnergy(LaserEnergyCost);
+
 
 
             if (activeLiveMixinTarget != null)
             {
-                activeLiveMixinTarget.TakeDamage(LaserDamage);
-                StartLaserCuttingFX();
+                bool wasAlive = activeLiveMixinTarget.IsAlive();
+                activeLiveMixinTarget.TakeDamage(LaserDamage, type: DamageType.Heat);
+                GiveResourceOnDamage(gameObject, activeLiveMixinTarget.IsAlive(), wasAlive);
+                
+                                               
             }
+            
+
             else
             {
                 LaserCut();
@@ -95,12 +115,39 @@ namespace LaserCutterMk2
              $" is now: 35/s");
 
         }
-    }
-            
 
+        private void GiveResourceOnDamage(GameObject target, bool isAlive, bool wasAlive)
+        {
+            TechType techType = CraftData.GetTechType(target);
+            HarvestType harvestTypeFromTech = CraftData.GetHarvestTypeFromTech(techType);
+
+            if ((harvestTypeFromTech == HarvestType.DamageAlive && wasAlive) || (harvestTypeFromTech == HarvestType.DamageDead && !isAlive))
+            {
+                int num = 2;
+                if (harvestTypeFromTech == HarvestType.DamageAlive && !isAlive)
+                {
+                    num += CraftData.GetHarvestFinalCutBonus(techType);
+                }
+                TechType harvestOutputData = CraftData.GetHarvestOutputData(techType);
+                if (harvestOutputData != TechType.None)
+                {
+                    CraftData.AddToInventory(harvestOutputData, num, false, false);
+                }
+            }
+        }
+
+
+    }
 
 
 }
+
+
+    
+
+
+
+
 
 
 

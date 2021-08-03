@@ -1,17 +1,9 @@
 ﻿using UnityEngine;
-using System;
-using System.IO;
-using System.Reflection;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using SMLHelper.V2.Assets;
-using SMLHelper.V2.Utility;
 using SMLHelper.V2.Crafting;
 using UWE;
-using System.Collections;
-using SMLHelper.V2.Handlers;
-using HarmonyLib;
+
 
 namespace LaserCutterMk2
 {
@@ -45,13 +37,7 @@ namespace LaserCutterMk2
 
         public override bool AddScannerEntry => base.AddScannerEntry;
 
-        public override int FragmentsToScan => 0;
-
-        public override float TimeToScanFragment => base.TimeToScanFragment;
-
-        public override bool DestroyFragmentOnScan => base.DestroyFragmentOnScan;
-
-        public override PDAEncyclopedia.EntryData EncyclopediaEntryData => base.EncyclopediaEntryData;
+       public override PDAEncyclopedia.EntryData EncyclopediaEntryData => base.EncyclopediaEntryData;
 
         public override TechGroup GroupForPDA => TechGroup.Personal;
 
@@ -61,7 +47,7 @@ namespace LaserCutterMk2
 
         public override string DiscoverMessage => base.DiscoverMessage;
 
-        public override float CraftingTime => 5f;
+        public override float CraftingTime => 3f;
 
         public override EquipmentType EquipmentType => EquipmentType.Hand;
 
@@ -90,38 +76,31 @@ namespace LaserCutterMk2
                 {
                     GameObject LaserCutterMk2 = CraftData.GetPrefabForTechType(TechType.LaserCutter);
                     var obj = GameObject.Instantiate(LaserCutterMk2);
-                    var lcMk2 = obj.AddComponent<LaserCutterMk2>();
-                    lcMk2.ikAimRightArm = true;
-                    lcMk2.mainCollider = obj.GetComponent<Collider>();
                     GameObject.DestroyImmediate(obj.GetComponent<LaserCutter>());
                     
-                    
                     obj.EnsureComponent<EnergyMixin>();
+
+                    var laser = obj.EnsureComponent<LaserCutterMk2>();
+                    laser.ikAimRightArm = true;
+                    laser.laserCutSound = obj.GetComponent<FMODASRPlayer>();
+                    laser.fxControl = obj.GetComponentInChildren<VFXController>();
+                    laser.fxLight = obj.GetComponentInChildren<Light>(true);
+                    laser.mainCollider = obj.GetComponent<CapsuleCollider>();
+
+                    laser.drawSound = ScriptableObject.CreateInstance<FMODAsset>();
+                    laser.drawSound.path = "event:/tools/lasercutter/deploy";
+
+                    laser.firstUseSound = obj.GetComponent<FMOD_CustomEmitter>();
+                    laser.pickupable = obj.GetComponent<Pickupable>();
+
+           
+
                     
-                    return obj;
+                    
+                    
+            return obj;
                 }
 
-        public override string ToString()
-        {
-            return base.ToString();
-        }
-
-        public override bool Equals(object obj)
-        {
-            return base.Equals(obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
-
-        protected override void ProcessPrefab(GameObject go)
-        {
-            base.ProcessPrefab(go);
-        }
-
-        
         protected override Atlas.Sprite GetItemSprite()
         {
             return SpriteManager.Get(TechType.LaserCutter);
