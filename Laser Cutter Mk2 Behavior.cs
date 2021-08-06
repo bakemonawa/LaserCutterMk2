@@ -23,107 +23,130 @@ namespace LaserCutterMk2
 
     [RequireComponent(typeof(EnergyMixin))]
     
+    
          
 
     public class LaserCutterMk2 : LaserCutter
     {
 
-        public override string animToolName => TechType.Welder.AsString(true);
+        public override string animToolName => TechType.Welder.AsString(true);        
 
-        public object AddressablesUtility { get; private set; }
+        private LiveMixin activeLiveMixinTarget;        
 
-        
+        public VFXEventTypes vfxEventType;
 
-      
+        public GameObject laserCutStreak;
 
-        private LiveMixin activeLiveMixinTarget;
+        public VFXController fxcontrol;
 
-        // raycast to find a live mixin
-        private void UpdateLiveTarget()
-        {
-            activeLiveMixinTarget = null;
-            if (usingPlayer != null)
-            {
-                Vector3 vector = default(Vector3);
-                GameObject gameObject = null;
+        public Light fxlight;
 
-                UWE.Utils.TraceFPSTargetPosition(Player.main.gameObject, 5f, ref gameObject, ref vector, true);
-                if (gameObject == null)
-                {
-                    InteractionVolumeUser interactionVolume = Player.main.gameObject.GetComponent<InteractionVolumeUser>();
-                    if (interactionVolume != null && interactionVolume.GetMostRecent() != null)
-                    {
-                        gameObject = interactionVolume.GetMostRecent().gameObject;
-                    }
-                }
-                if (gameObject)
-                {
-                    var liveMixin = gameObject.GetComponentInParent<LiveMixin>();
-                    if (liveMixin)
-                    {
-                        activeLiveMixinTarget = liveMixin;
-                    }
-                }
-            }
-        }
+        public GameObject laserCutFX;
+
+        public bool colliderhit;
+
+        public float LaserRange = 3.3f;
+
 
         private void Update()
         {
-            if (!isDrawn)
-                return;
 
-            UpdateLiveTarget();
-            base.Update();
+            base.Update();                         
+            
         }
 
-          
+       
+
         
-        
-        
-             
+
 
         public override void OnToolUseAnim(GUIHand hand)
 
         {
-
-            float LaserEnergyCost = 1f * Time.deltaTime*2;
-            float LaserDamage = 45f * Time.deltaTime;
-
+            
+            float LaserEnergyCost = 1f * Time.deltaTime / 2;
+            float LaserDamage = 35f * Time.deltaTime;            
+                                             
             energyMixin.ConsumeEnergy(LaserEnergyCost);
 
+            fxControl.Play(2);                       
+                                                               
+            Vector3 vector = default(Vector3);
+            GameObject gameObject = null;
+            UWE.Utils.TraceFPSTargetPosition(Player.main.gameObject, LaserRange, ref gameObject, ref vector, true);
 
+            float dist = Vector3.Distance(vector, Player.main.transform.position);
 
-            if (activeLiveMixinTarget != null)
+            if (dist <= LaserRange)
+
             {
-                bool wasAlive = activeLiveMixinTarget.IsAlive();
-                activeLiveMixinTarget.TakeDamage(LaserDamage, type: DamageType.Heat);
-                GiveResourceOnDamage(gameObject, activeLiveMixinTarget.IsAlive(), wasAlive);
-                
-                                               
+                StartLaserCuttingFX();
             }
-            
 
+            if (gameObject == null)
+            {
+                InteractionVolumeUser interactionVolume = Player.main.gameObject.GetComponent<InteractionVolumeUser>();
+
+                if (interactionVolume != null && interactionVolume.GetMostRecent() != null)
+                {
+                    gameObject = interactionVolume.GetMostRecent().gameObject;
+                }
+            }
+            if (gameObject)
+            {
+                LiveMixin liveMixin = gameObject.FindAncestor<LiveMixin>();
+                if (Knife.IsValidTarget(liveMixin))
+                {
+                    if (liveMixin)
+                    {
+                        bool wasAlive = liveMixin.IsAlive();
+                        liveMixin.TakeDamage(LaserDamage, vector, type: DamageType.Heat, null);
+                        GiveResourceOnDamage(gameObject, liveMixin.IsAlive(), wasAlive);
+                    }
+
+                    VFXSurface component2 = gameObject.GetComponent<VFXSurface>();
+                    Vector3 euler = MainCameraControl.main.transform.eulerAngles + new Vector3(300f, 90f, 0f);
+                    VFXSurfaceTypeManager.main.Play(component2, this.vfxEventType, vector, Quaternion.Euler(euler), Player.main.transform);
+                }
+
+            }
             else
             {
                 LaserCut();
-            }
+            }               
+                       
 
+            ParticleSystem component = this.laserCutFX.transform.GetComponent<ParticleSystem>();
+                if (component)
+                {
+                    var emission = component.emission;
+                    emission.enabled = true;
 
+                    if (!component.isPlaying)
+                    {
+                        component.Play();
+                    }
+                }
 
+            laserCutStreak.transform.position = vector;
+            laserCutFX.transform.position = vector;
 
             Logger.Log(Logger.Level.Debug, $"Knife damage was: null," +
              $" is now: 35/s");
 
         }
 
-        private void GiveResourceOnDamage(GameObject target, bool isAlive, bool wasAlive)
+        void GiveResourceOnDamage(GameObject target, bool isAlive, bool wasAlive)
         {
             TechType techType = CraftData.GetTechType(target);
             HarvestType harvestTypeFromTech = CraftData.GetHarvestTypeFromTech(techType);
-
+            if (techType == TechType.Creepvine)
+            {
+                GoalManager.main.OnCustomGoalEvent("Cut_Creepvine");
+            }
             if ((harvestTypeFromTech == HarvestType.DamageAlive && wasAlive) || (harvestTypeFromTech == HarvestType.DamageDead && !isAlive))
             {
-                int num = 2;
+                int num = 1;
                 if (harvestTypeFromTech == HarvestType.DamageAlive && !isAlive)
                 {
                     num += CraftData.GetHarvestFinalCutBonus(techType);
